@@ -1,3 +1,4 @@
+"use client";
 import { useState } from 'react';
 import { useChatStore } from '../../store/chatStore';
 import { ChatMessage } from './ChatMessage';
