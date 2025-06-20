@@ -6,5 +6,17 @@ export const auth0Config = {
     audience: "https://vibe-api"
   },
   cacheLocation: "localstorage" as const,
-  useRefreshTokens: true
+  useRefreshTokens: true,
+  skipRedirectCallback: false,
+  onRedirectCallback: () => {
+    console.log('Auth0 redirect callback triggered');
+    // Clear the URL parameters after successful authentication
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+      );
+    }
+  }
 }; 
