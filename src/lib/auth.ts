@@ -5,6 +5,6 @@ export const auth0Config = {
     redirect_uri: "https://frontend-k6tf.onrender.com",
     audience: "https://vibe-api"
   },
-  cacheLocation: "localstorage",
+  cacheLocation: "localstorage" as const,
   useRefreshTokens: true
 }; 
