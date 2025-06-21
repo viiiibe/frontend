@@ -38,7 +38,13 @@ export const sendMessage = (message: string, getAccessTokenSilently: (options?: 
 };
 
 export const getProblems = (getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>) => {
-    return fetchWithAuth('/problems', { method: 'GET' }, getAccessTokenSilently);
+    return fetchWithAuth('/problems', { method: 'GET' }, getAccessTokenSilently).then(data => {
+        console.log('Problems API response:', data);
+        return data;
+    }).catch(error => {
+        console.error('Problems API error:', error);
+        throw error;
+    });
 };
 
 export const getProblemById = (id: string, getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>) => {

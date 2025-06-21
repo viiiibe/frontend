@@ -20,10 +20,17 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
   isLoading: false,
   error: null,
   fetchProblems: async (getAccessTokenSilently) => {
-    set({ isLoading: true, error: null });
+    console.log('Fetching problems...');
+    set({ isLoading: true, error: null, problems: [] });
     try {
       const data = await getProblems(getAccessTokenSilently);
-      set({ problems: Array.isArray(data) ? data : [], isLoading: false });
+      console.log('Problems data received:', data);
+      
+      // Ensure data is an array
+      const problemsArray = Array.isArray(data) ? data : [];
+      console.log('Problems array:', problemsArray);
+      
+      set({ problems: problemsArray, isLoading: false });
     } catch (error) {
       console.error("Failed to fetch problems", error);
       set({ error: "Failed to load problems", isLoading: false, problems: [] });

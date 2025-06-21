@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { ProblemsList } from '../../../components/problems/ProblemsList';
 import { useProblemsStore } from '../../../store/problemsStore';
+import { ErrorBoundary } from '../../../components/ErrorBoundary';
 
 export default function ProblemsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,7 +54,9 @@ export default function ProblemsPage() {
         </div>
       </div>
 
-      <ProblemsList searchTerm={searchTerm} />
+      <ErrorBoundary>
+        <ProblemsList searchTerm={searchTerm} />
+      </ErrorBoundary>
     </main>
   );
 } 

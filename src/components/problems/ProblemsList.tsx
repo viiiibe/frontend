@@ -34,11 +34,17 @@ const getTopicColor = (topic: string) => {
 export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
   const router = useRouter();
-  const { problems, isLoading, error, fetchProblems } = useProblemsStore();
+  const { problems, isLoading, error: storeError, fetchProblems } = useProblemsStore();
   const { initializeProblemChat } = useChatStore();
+
+  // Debug logging
+  console.log('ProblemsList render - problems:', problems);
+  console.log('ProblemsList render - isLoading:', isLoading);
+  console.log('ProblemsList render - storeError:', storeError);
 
   // Ensure problems is always an array
   const safeProblems = Array.isArray(problems) ? problems : [];
+  console.log('ProblemsList render - safeProblems:', safeProblems);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -76,18 +82,18 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
     );
   }
 
-  if (error) {
+  if (storeError) {
     return (
       <div className="flex justify-center items-center min-h-96">
         <div className="text-center">
           <div className="text-red-500 text-lg mb-2">Error loading problems</div>
-          <div className="text-gray-500">{error}</div>
+          <div className="text-gray-500">{storeError}</div>
         </div>
       </div>
     );
   }
 
-  if (!problems || problems.length === 0) {
+  if (safeProblems.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-96">
         <div className="text-center">
