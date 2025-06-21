@@ -37,6 +37,9 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
   const { problems, isLoading, error, fetchProblems } = useProblemsStore();
   const { initializeProblemChat } = useChatStore();
 
+  // Ensure problems is always an array
+  const safeProblems = Array.isArray(problems) ? problems : [];
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchProblems(getAccessTokenSilently);
@@ -58,7 +61,7 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
   }
 
   // Filter problems based on search term
-  const filteredProblems = (problems || []).filter(problem =>
+  const filteredProblems = safeProblems.filter(problem =>
     problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     problem.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
     problem.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||

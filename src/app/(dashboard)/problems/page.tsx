@@ -1,9 +1,32 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { ProblemsList } from '../../../components/problems/ProblemsList';
+import { useProblemsStore } from '../../../store/problemsStore';
 
 export default function ProblemsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isReady, setIsReady] = useState(false);
+  const { isAuthenticated, isLoading: authLoading } = useAuth0();
+  const { problems } = useProblemsStore();
+
+  useEffect(() => {
+    // Wait for authentication to be ready and problems to be initialized
+    if (!authLoading && isAuthenticated && Array.isArray(problems)) {
+      setIsReady(true);
+    }
+  }, [authLoading, isAuthenticated, problems]);
+
+  // Show loading while not ready
+  if (!isReady) {
+    return (
+      <main className="p-8 max-w-7xl mx-auto">
+        <div className="flex justify-center items-center min-h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="p-8 max-w-7xl mx-auto">

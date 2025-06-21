@@ -26,11 +26,11 @@ export const useChatStore = create<ChatState>((set) => ({
   isCodeEditorMode: false,
   isLoading: false,
   fetchMessages: async (getAccessTokenSilently) => {
-    set({ isLoading: true });
+    set({ isLoading: true, messages: [] });
     try {
       const data = await getMessages(getAccessTokenSilently);
-      const messages = data?.messages || [];
-      const formattedMessages: Message[] = messages.flatMap((pair: ApiMessagePair) => [
+      const messagesArray = data?.messages || [];
+      const formattedMessages: Message[] = messagesArray.flatMap((pair: ApiMessagePair) => [
         {
           id: nanoid(),
           role: 'user' as const,
@@ -49,7 +49,7 @@ export const useChatStore = create<ChatState>((set) => ({
       set({ messages: formattedMessages, isLoading: false });
     } catch (error) {
       console.error("Failed to fetch messages", error);
-      set({ messages: [], isLoading: false });
+      set({ isLoading: false, messages: [] });
     }
   },
   sendMessage: async (content, getAccessTokenSilently) => {
@@ -60,7 +60,7 @@ export const useChatStore = create<ChatState>((set) => ({
       content,
       metadata: { timestamp: new Date().toISOString() },
     };
-    set((state) => ({ messages: [...state.messages, userMessage], isLoading: true }));
+    set((state) => ({ messages: [...(state.messages || []), userMessage], isLoading: true }));
 
     try {
       const response = await sendMessageApi(content, getAccessTokenSilently);
@@ -72,7 +72,7 @@ export const useChatStore = create<ChatState>((set) => ({
         metadata: { timestamp: new Date().toISOString() },
       };
       set((state) => ({
-        messages: [...state.messages, assistantMessage],
+        messages: [...(state.messages || []), assistantMessage],
         isLoading: false,
       }));
     } catch (error) {
@@ -85,7 +85,7 @@ export const useChatStore = create<ChatState>((set) => ({
         metadata: { timestamp: new Date().toISOString() },
       };
       set((state) => ({
-        messages: [...state.messages, errorMessage],
+        messages: [...(state.messages || []), errorMessage],
         isLoading: false,
       }));
     }
@@ -97,7 +97,7 @@ export const useChatStore = create<ChatState>((set) => ({
     set((state) => ({ isCodeEditorMode: !state.isCodeEditorMode })),
   setCodeEditorMode: (mode) => set({ isCodeEditorMode: mode }),
   initializeProblemChat: (problem: Problem) => {
-    set({ currentProblem: problem });
+    set({ currentProblem: problem, messages: [] });
     
     // Create the problem description message
     const problemMessage = `Problem: ${problem.title}\n\nDescription: ${problem.description}\n\nTopic: ${problem.topic}\nComplexity: ${problem.complexity}${problem.isCustom ? '\nType: Custom Problem' : ''}\n\nLet's discuss this problem and work on a solution together!`;
