@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useChatStore } from '../../store/chatStore';
 import { ChatMessage } from './ChatMessage';
-import { ProblemView } from '../problems/ProblemView';
 import { CodeEditor } from '../code/CodeEditor';
 
 export const ChatInterface = () => {
@@ -17,18 +16,13 @@ export const ChatInterface = () => {
   const isCodeEditorMode = useChatStore((s) => s.isCodeEditorMode);
   const setCodeEditorMode = useChatStore((s) => s.setCodeEditorMode);
 
-  // Debug logging
-  console.log('ChatInterface render - input:', input);
-  console.log('ChatInterface render - isLoading:', isLoading);
-  console.log('ChatInterface render - isCodeEditorMode:', isCodeEditorMode);
-  console.log('ChatInterface render - messages count:', messages?.length);
-
   useEffect(() => {
-    if (isAuthenticated) {
-      // Always fetch messages when authenticated
+    if (isAuthenticated && !currentProblem && (!messages || messages.length === 0)) {
+      // Only fetch messages if there's no current problem and no existing messages
+      // This prevents interfering with problem conversations that were just initialized
       fetchMessages(getAccessTokenSilently);
     }
-  }, [isAuthenticated, fetchMessages, getAccessTokenSilently]);
+  }, [isAuthenticated, fetchMessages, getAccessTokenSilently, currentProblem, messages]);
 
   // Trigger code editor mode for incoming assistant messages
   useEffect(() => {
@@ -47,16 +41,9 @@ export const ChatInterface = () => {
     setInput('');
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    console.log('Input change:', e.target.value);
-    setInput(e.target.value);
-  };
-
   const handleCodeSend = (code: string, language: string) => {
-    // Append code to the current input instead of sending as a separate message
-    const codeBlock = `\`\`\`${language}\n${code}\n\`\`\``;
-    setInput(prev => prev + (prev ? '\n\n' : '') + codeBlock);
-    setCodeEditorMode(false); // Close the code editor after appending
+    const codeMessage = `\`\`\`${language}\n${code}\n\`\`\``;
+    sendMessage(codeMessage, getAccessTokenSilently);
   };
 
   const handleCloseCodeEditor = () => {
@@ -81,24 +68,14 @@ export const ChatInterface = () => {
         </div>
       </div>
       
-      {/* Problem View */}
-      {currentProblem && (
-        <div className="border-t bg-white p-4">
-          <ProblemView problem={currentProblem} />
-        </div>
-      )}
-      
       {/* Input Area - Always show */}
       <div className="border-t p-4 bg-gray-50 flex items-center gap-2">
         <textarea
           value={input}
-          onChange={handleInputChange}
+          onChange={(e) => setInput(e.target.value)}
           className="w-full rounded-lg border p-2"
           placeholder="Type your message..."
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-          onFocus={() => console.log('Textarea focused')}
-          onBlur={() => console.log('Textarea blurred')}
-          disabled={isLoading}
         />
         <button
           className="rounded-lg bg-blue-500 px-4 py-2 text-white"

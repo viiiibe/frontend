@@ -28,8 +28,12 @@ export const useChatStore = create<ChatState>((set) => ({
   fetchMessages: async (getAccessTokenSilently) => {
     set({ isLoading: true, messages: [] });
     try {
-      // Always clear messages on the backend before fetching
-      await clearMessages(getAccessTokenSilently);
+      // Only clear messages on the backend if there's no current problem
+      // This prevents clearing problem messages that were just sent
+      const state = useChatStore.getState();
+      if (!state.currentProblem) {
+        await clearMessages(getAccessTokenSilently);
+      }
       const data = await getMessages(getAccessTokenSilently);
       const messagesArray = data?.messages || [];
       const formattedMessages: Message[] = messagesArray.flatMap((pair: ApiMessagePair) => [
