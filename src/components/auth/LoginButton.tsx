@@ -1,14 +1,13 @@
 "use client";
-import { useAuth0 } from '@auth0/auth0-react';
+import Link from 'next/link';
 
 export const LoginButton = () => {
-  const { loginWithRedirect } = useAuth0();
   return (
-    <button
-      onClick={() => loginWithRedirect()}
-      className="rounded-lg bg-blue-500 px-4 py-2 text-white"
+    <Link
+      href="/api/auth/login"
+      className="rounded-lg bg-blue-500 px-4 py-2 text-white inline-block"
     >
       Log In
-    </button>
+    </Link>
   );
 }; 

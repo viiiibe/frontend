@@ -1,12 +1,11 @@
 "use client";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Auth0Provider } from '@auth0/auth0-react';
-import { auth0Config } from '../lib/auth';
+import { UserProvider } from '@auth0/nextjs-auth0/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LogoutButton } from '../components/auth/LogoutButton';
 import Link from 'next/link';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,8 +20,8 @@ const geistMono = Geist_Mono({
 const queryClient = new QueryClient();
 
 function NavBar() {
-  const { isAuthenticated } = useAuth0();
-  if (!isAuthenticated) return null;
+  const { user, isLoading } = useUser();
+  if (isLoading || !user) return null;
   return (
     <nav className="bg-white border-b shadow flex items-center gap-6 px-8 py-3">
       <Link href="/chat" className="font-semibold text-blue-600">Chat</Link>
@@ -43,12 +42,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Auth0Provider {...auth0Config}>
+        <UserProvider>
           <QueryClientProvider client={queryClient}>
             <NavBar />
             {children}
           </QueryClientProvider>
-        </Auth0Provider>
+        </UserProvider>
       </body>
     </html>
   );
