@@ -1,31 +1,32 @@
 "use client";
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect, useState } from 'react';
 
 export const UserProfile = () => {
-  const { user, isLoading, error } = useUser();
+  const { user, isAuthenticated, isLoading, error, getAccessTokenSilently } = useAuth0();
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetch('https://backend-bdv7.onrender.com/users/me', {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to fetch profile');
-          return res.json();
-        })
-        .then(() => {
+    const fetchProfile = async () => {
+      if (isAuthenticated) {
+        try {
+          const token = await getAccessTokenSilently();
+          const response = await fetch('https://backend-bdv7.onrender.com/users/me', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (!response.ok) {
+            throw new Error('Failed to fetch profile');
+          }
           setShowPopup(true);
-        })
-        .catch(() => {
-          // Optionally handle error
-        });
-    }
-  }, [user]);
+        } catch {
+          // console.error(e);
+        }
+      }
+    };
+    fetchProfile();
+  }, [isAuthenticated, getAccessTokenSilently]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -35,14 +36,14 @@ export const UserProfile = () => {
     return <div>Error: {error.message}</div>;
   }
   
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return null;
   }
   
   return (
     <div className="flex items-center space-x-4">
       {user.picture && (
-        <img src={user.picture ?? ''} alt={user.name ?? 'User'} className="w-10 h-10 rounded-full" />
+        <img src={user.picture} alt={user.name ?? 'User'} className="w-10 h-10 rounded-full" />
       )}
       <div>
         <h2 className="font-semibold">{user.name ?? 'User'}</h2>
