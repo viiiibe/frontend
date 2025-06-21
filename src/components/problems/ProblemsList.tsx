@@ -67,12 +67,31 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
   }
 
   // Filter problems based on search term
-  const filteredProblems = safeProblems.filter(problem =>
-    problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    problem.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    problem.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    problem.complexity.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProblems = safeProblems.filter(problem => {
+    try {
+      // Validate problem object before filtering
+      if (!problem || typeof problem !== 'object') {
+        console.error('Invalid problem object in filter:', problem);
+        return false;
+      }
+      
+      // Check for required properties
+      if (!problem.title || !problem.description || !problem.topic || !problem.complexity) {
+        console.error('Problem missing required properties in filter:', problem);
+        return false;
+      }
+
+      return (
+        problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        problem.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        problem.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        problem.complexity.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    } catch (error) {
+      console.error('Error filtering problem:', error, problem);
+      return false;
+    }
+  });
 
   if (isLoading) {
     return (
@@ -117,51 +136,65 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredProblems.map((problem) => (
-        <div
-          key={problem.id}
-          onClick={() => handleProblemClick(problem)}
-          className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-gray-200 overflow-hidden group"
-        >
-          <div className="p-6">
-            <div className="flex items-start justify-between mb-3">
-              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
-                {problem.title}
-              </h3>
-              {problem.isCustom && (
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
-                  Custom
-                </span>
-              )}
-            </div>
-            
-            <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-              {problem.description}
-            </p>
-            
-            <div className="flex flex-wrap gap-2 mb-4">
-              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getTopicColor(problem.topic)}`}>
-                {problem.topic}
-              </span>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getComplexityColor(problem.complexity)}`}>
-                {problem.complexity}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="text-xs text-gray-500">
-                ID: {problem.id}
+      {filteredProblems.map((problem, index) => {
+        // Validate problem object
+        if (!problem || typeof problem !== 'object') {
+          console.error('Invalid problem object at index', index, ':', problem);
+          return null;
+        }
+        
+        // Check for required properties
+        if (!problem.id || !problem.title || !problem.description || !problem.topic || !problem.complexity) {
+          console.error('Problem missing required properties at index', index, ':', problem);
+          return null;
+        }
+
+        return (
+          <div
+            key={problem.id}
+            onClick={() => handleProblemClick(problem)}
+            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-gray-200 overflow-hidden group"
+          >
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
+                  {problem.title}
+                </h3>
+                {problem.isCustom && (
+                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
+                    Custom
+                  </span>
+                )}
               </div>
-              <div className="flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors duration-200">
-                <span>Start Chat</span>
-                <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+              
+              <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                {problem.description}
+              </p>
+              
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getTopicColor(problem.topic)}`}>
+                  {problem.topic}
+                </span>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getComplexityColor(problem.complexity)}`}>
+                  {problem.complexity}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-gray-500">
+                  ID: {problem.id}
+                </div>
+                <div className="flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors duration-200">
+                  <span>Start Chat</span>
+                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }; 
