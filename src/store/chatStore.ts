@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import type { Message, Problem, ApiMessagePair } from '../types/chat';
-import { getMessages, sendMessage as sendMessageApi } from '../lib/api';
+import { getMessages, sendMessage as sendMessageApi, clearMessages } from '../lib/api';
 import { GetTokenSilentlyOptions } from '@auth0/auth0-react';
 
 interface ChatState {
@@ -16,7 +16,7 @@ interface ChatState {
   toggleEditor: () => void;
   toggleCodeEditorMode: () => void;
   setCodeEditorMode: (mode: boolean) => void;
-  initializeProblemChat: (problem: Problem) => void;
+  initializeProblemChat: (problem: Problem, getAccessTokenSilently?: (options?: GetTokenSilentlyOptions) => Promise<string>) => Promise<void>;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -28,6 +28,8 @@ export const useChatStore = create<ChatState>((set) => ({
   fetchMessages: async (getAccessTokenSilently) => {
     set({ isLoading: true, messages: [] });
     try {
+      // Always clear messages on the backend before fetching
+      await clearMessages(getAccessTokenSilently);
       const data = await getMessages(getAccessTokenSilently);
       const messagesArray = data?.messages || [];
       const formattedMessages: Message[] = messagesArray.flatMap((pair: ApiMessagePair) => [
@@ -96,21 +98,65 @@ export const useChatStore = create<ChatState>((set) => ({
   toggleCodeEditorMode: () =>
     set((state) => ({ isCodeEditorMode: !state.isCodeEditorMode })),
   setCodeEditorMode: (mode) => set({ isCodeEditorMode: mode }),
-  initializeProblemChat: (problem: Problem) => {
+  initializeProblemChat: async (problem: Problem, getAccessTokenSilently?: (options?: GetTokenSilentlyOptions) => Promise<string>) => {
+    console.log('initializeProblemChat called with problem:', problem.title);
+    console.log('getAccessTokenSilently provided:', !!getAccessTokenSilently);
+    
     set({ currentProblem: problem, messages: [] });
+    console.log('Chat cleared and problem set');
     
     // Create the problem description message
     const problemMessage = `Problem: ${problem.title}\n\nDescription: ${problem.description}\n\nTopic: ${problem.topic}\nComplexity: ${problem.complexity}${problem.isCustom ? '\nType: Custom Problem' : ''}\n\nLet's discuss this problem and work on a solution together!`;
+    console.log('Problem message created:', problemMessage.substring(0, 100) + '...');
     
-    // Add the problem description as the first message
-    const userMessage: Message = {
+    // Add the problem description as a problem message (not a user message)
+    const problemMessageObj: Message = {
       id: nanoid(),
       role: 'user',
-      type: 'text',
+      type: 'problem',
       content: problemMessage,
       metadata: { timestamp: new Date().toISOString() },
     };
     
-    set({ messages: [userMessage] });
+    set({ messages: [problemMessageObj], isLoading: true });
+    console.log('Problem message added to chat');
+    
+    // If we have access to the token function, automatically send the message to get a response
+    if (getAccessTokenSilently) {
+      console.log('Sending initial message to API...');
+      try {
+        const response = await sendMessageApi(problemMessage, getAccessTokenSilently);
+        console.log('API response received:', response.response.substring(0, 100) + '...');
+        const assistantMessage: Message = {
+          id: nanoid(),
+          role: 'assistant',
+          type: 'text',
+          content: response.response,
+          metadata: { timestamp: new Date().toISOString() },
+        };
+        set((state) => ({
+          messages: [...state.messages, assistantMessage],
+          isLoading: false,
+        }));
+        console.log('Assistant message added to chat');
+      } catch (error) {
+        console.error("Failed to send initial problem message", error);
+        const errorMessage: Message = {
+          id: nanoid(),
+          role: 'assistant',
+          type: 'text',
+          content: 'Sorry, I had trouble getting a response. Please try again.',
+          metadata: { timestamp: new Date().toISOString() },
+        };
+        set((state) => ({
+          messages: [...state.messages, errorMessage],
+          isLoading: false,
+        }));
+      }
+    } else {
+      console.log('No token function provided, skipping API call');
+      // If no token function provided, just set loading to false
+      set({ isLoading: false });
+    }
   },
 })); 

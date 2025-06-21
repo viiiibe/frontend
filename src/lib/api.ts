@@ -49,4 +49,11 @@ export const getProblems = (getAccessTokenSilently: (options?: GetTokenSilentlyO
 
 export const getProblemById = (id: string, getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>) => {
     return fetchWithAuth(`/problems/${id}`, { method: 'GET' }, getAccessTokenSilently);
+};
+
+export const clearMessages = (getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>) => {
+    return fetchWithAuth('/chat/messages', { 
+        method: 'DELETE',
+        body: JSON.stringify({ unreadOnly: false }),
+    }, getAccessTokenSilently);
 }; 

@@ -17,8 +17,15 @@ export const ChatInterface = () => {
   const isCodeEditorMode = useChatStore((s) => s.isCodeEditorMode);
   const setCodeEditorMode = useChatStore((s) => s.setCodeEditorMode);
 
+  // Debug logging
+  console.log('ChatInterface render - input:', input);
+  console.log('ChatInterface render - isLoading:', isLoading);
+  console.log('ChatInterface render - isCodeEditorMode:', isCodeEditorMode);
+  console.log('ChatInterface render - messages count:', messages?.length);
+
   useEffect(() => {
     if (isAuthenticated) {
+      // Always fetch messages when authenticated
       fetchMessages(getAccessTokenSilently);
     }
   }, [isAuthenticated, fetchMessages, getAccessTokenSilently]);
@@ -40,9 +47,16 @@ export const ChatInterface = () => {
     setInput('');
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    console.log('Input change:', e.target.value);
+    setInput(e.target.value);
+  };
+
   const handleCodeSend = (code: string, language: string) => {
-    const codeMessage = `\`\`\`${language}\n${code}\n\`\`\``;
-    sendMessage(codeMessage, getAccessTokenSilently);
+    // Append code to the current input instead of sending as a separate message
+    const codeBlock = `\`\`\`${language}\n${code}\n\`\`\``;
+    setInput(prev => prev + (prev ? '\n\n' : '') + codeBlock);
+    setCodeEditorMode(false); // Close the code editor after appending
   };
 
   const handleCloseCodeEditor = () => {
@@ -74,25 +88,26 @@ export const ChatInterface = () => {
         </div>
       )}
       
-      {/* Input Area - Only show when not in code editor mode */}
-      {!isCodeEditorMode && (
-        <div className="border-t p-4 bg-gray-50 flex items-center gap-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="w-full rounded-lg border p-2"
-            placeholder="Type your message..."
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-          />
-          <button
-            className="rounded-lg bg-blue-500 px-4 py-2 text-white"
-            onClick={handleSend}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Sending...' : 'Send'}
-          </button>
-        </div>
-      )}
+      {/* Input Area - Always show */}
+      <div className="border-t p-4 bg-gray-50 flex items-center gap-2">
+        <textarea
+          value={input}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border p-2"
+          placeholder="Type your message..."
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+          onFocus={() => console.log('Textarea focused')}
+          onBlur={() => console.log('Textarea blurred')}
+          disabled={isLoading}
+        />
+        <button
+          className="rounded-lg bg-blue-500 px-4 py-2 text-white"
+          onClick={handleSend}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Sending...' : 'Send'}
+        </button>
+      </div>
     </div>
   );
 

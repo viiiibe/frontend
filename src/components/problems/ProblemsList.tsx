@@ -62,10 +62,20 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
   console.log('ProblemsList render - problems:', problems);
   console.log('ProblemsList render - isLoading:', isLoading);
   console.log('ProblemsList render - storeError:', storeError);
+  console.log('ProblemsList render - searchTerm:', searchTerm);
+  console.log('ProblemsList render - searchTerm type:', typeof searchTerm);
+  console.log('ProblemsList render - searchTerm length:', searchTerm?.length);
 
   // Ensure problems is always an array
   const safeProblems = Array.isArray(problems) ? problems : [];
   console.log('ProblemsList render - safeProblems:', safeProblems);
+  console.log('ProblemsList render - safeProblems.length:', safeProblems.length);
+  
+  // Log first problem structure if available
+  if (safeProblems.length > 0) {
+    console.log('ProblemsList render - first problem structure:', safeProblems[0]);
+    console.log('ProblemsList render - first problem keys:', Object.keys(safeProblems[0]));
+  }
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -73,9 +83,12 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
     }
   }, [isAuthenticated, fetchProblems, getAccessTokenSilently]);
 
-  const handleProblemClick = (problem: Problem) => {
+  const handleProblemClick = async (problem: Problem) => {
+    console.log('handleProblemClick called with problem:', problem.title);
     try {
-      initializeProblemChat(problem);
+      console.log('Calling initializeProblemChat...');
+      await initializeProblemChat(problem, getAccessTokenSilently);
+      console.log('initializeProblemChat completed, navigating to chat...');
       router.push('/chat');
     } catch (error) {
       console.error('Error handling problem click:', error);
@@ -92,6 +105,8 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
   }
 
   // Filter problems based on search term with maximum safety
+  console.log('Starting filtering process with searchTerm:', searchTerm);
+  
   const filteredProblems = safeProblems.filter(problem => {
     try {
       // Validate problem object before filtering
@@ -100,20 +115,26 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
         return false;
       }
       
+      // If no search term, include all valid problems
+      const searchLower = safeString(searchTerm).toLowerCase().trim();
+      
+      if (!searchLower) {
+        return true; // Show all problems when no search term
+      }
+      
       // Safely extract properties
       const title = safeString(problem.title);
       const description = safeString(problem.description);
       const topic = safeString(problem.topic);
       const complexity = safeString(problem.complexity);
 
-      // Check for required properties
-      if (!title || !description || !topic || !complexity) {
-        console.error('Problem missing required properties in filter:', { title, description, topic, complexity });
+      // Only require title to be present for filtering
+      if (!title) {
+        console.error('Problem missing title in filter:', problem);
         return false;
       }
 
-      const searchLower = safeString(searchTerm).toLowerCase();
-      
+      // Search across all available properties (including empty topic)
       return (
         title.toLowerCase().includes(searchLower) ||
         description.toLowerCase().includes(searchLower) ||
@@ -125,6 +146,8 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
       return false;
     }
   });
+
+  console.log('Filtered problems count:', filteredProblems.length);
 
   if (isLoading) {
     return (
@@ -169,8 +192,10 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
 
   // Render problems with maximum safety
   const renderProblems = () => {
+    console.log('renderProblems called with filteredProblems:', filteredProblems.length);
     try {
-      return filteredProblems.map((problem, index) => {
+      const renderedProblems = filteredProblems.map((problem, index) => {
+        console.log('Rendering problem at index', index, ':', problem?.title);
         try {
           // Validate problem object
           if (!problem || typeof problem !== 'object') {
@@ -186,12 +211,15 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
           const complexity = safeString(problem.complexity, 'Unknown');
           const isCustom = safeBoolean(problem.isCustom, false);
 
+          console.log('Problem properties extracted:', { id, title, topic, complexity });
+
           // Check for minimum required properties
           if (!title || title === 'Untitled Problem') {
             console.error('Problem missing title at index', index, ':', problem);
             return null;
           }
 
+          console.log('Rendering problem card for:', title);
           return (
             <div
               key={id}
@@ -242,6 +270,9 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
           return null;
         }
       });
+      
+      console.log('Rendered problems count:', renderedProblems.filter(p => p !== null).length);
+      return renderedProblems;
     } catch (error) {
       console.error('Error in renderProblems:', error);
       return (
@@ -252,9 +283,13 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
     }
   };
 
+  console.log('About to render problems grid');
+  const renderedProblems = renderProblems();
+  console.log('Problems rendered, returning grid');
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {renderProblems()}
+      {renderedProblems}
     </div>
   );
-}; 
+};
