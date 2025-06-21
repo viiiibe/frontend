@@ -155,14 +155,14 @@ export const ChatInterface = () => {
 
   if (isCodeEditorMode) {
     return (
-      <div className="flex h-screen">
+      <div className="flex h-full">
         {/* Chat Section - 50% width */}
-        <div className="w-1/2 border-r border-white/10">
+        <div className="w-1/2 border-r border-white/10 h-full">
           {chatContent}
         </div>
         
         {/* Code Editor Section - 50% width */}
-        <div className="w-1/2 bg-black/20">
+        <div className="w-1/2 bg-black/20 h-full">
           <CodeEditor 
             onSend={handleCodeSend}
             onClose={handleCloseCodeEditor}
@@ -174,7 +174,7 @@ export const ChatInterface = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       {chatContent}
     </div>
   );
