@@ -1,22 +1,5 @@
+// This file is kept for backward compatibility but the actual config is in auth0-config.ts
+// The Next.js Auth0 SDK automatically reads from environment variables
 export const auth0Config = {
-  domain: "dev-ojvj8n4zvqe8rmrm.us.auth0.com",
-  clientId: "8q5IimCLt3gDPVfoiF8fPGKr1tcXh9H3",
-  authorizationParams: {
-    redirect_uri: "https://frontend-k6tf.onrender.com",
-    audience: "https://backend-bdv7.onrender.com"
-  },
-  cacheLocation: "localstorage" as const,
-  useRefreshTokens: true,
-  skipRedirectCallback: false,
-  onRedirectCallback: () => {
-    console.log('Auth0 redirect callback triggered');
-    // Clear the URL parameters after successful authentication
-    if (typeof window !== 'undefined') {
-      window.history.replaceState(
-        {},
-        document.title,
-        window.location.pathname
-      );
-    }
-  }
+  // Configuration is now handled by environment variables and auth0-config.ts
 }; 

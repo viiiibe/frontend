@@ -1,14 +1,13 @@
 "use client";
-import { useAuth0 } from '@auth0/auth0-react';
+import Link from 'next/link';
 
 export const LogoutButton = () => {
-  const { logout } = useAuth0();
   return (
-    <button
-      onClick={() => logout()}
-      className="rounded-lg bg-gray-500 px-4 py-2 text-white"
+    <Link
+      href="/api/auth/logout"
+      className="rounded-lg bg-red-500 px-4 py-2 text-white text-sm"
     >
       Log Out
-    </button>
+    </Link>
   );
 }; 
