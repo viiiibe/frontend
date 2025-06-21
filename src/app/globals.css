@@ -343,3 +343,43 @@ body {
 .text-responsive-md {
   font-size: clamp(1rem, 2vw, 1.5rem);
 }
+
+.prose {
+  color: var(--foreground);
+}
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: var(--foreground);
+}
+.prose a {
+  color: var(--primary-400);
+}
+.prose strong {
+  color: var(--foreground);
+}
+.prose blockquote {
+  border-left-color: var(--primary-400);
+  color: var(--muted-foreground);
+}
+
+.prose-invert {
+  color: var(--foreground);
+}
+.prose-invert h1, .prose-invert h2, .prose-invert h3, .prose-invert h4, .prose-invert h5, .prose-invert h6 {
+  color: var(--foreground);
+}
+.prose-invert a {
+  color: var(--primary-300);
+}
+.prose-invert strong {
+  color: var(--foreground);
+}
+.prose-invert blockquote {
+  border-left-color: var(--primary-300);
+  color: var(--muted-foreground);
+}
+.prose-invert ul > li::before {
+  background-color: var(--primary-400);
+}
+.prose-invert ol > li::before {
+  color: var(--primary-400);
+}

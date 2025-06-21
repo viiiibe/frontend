@@ -1,4 +1,29 @@
 import type { Message } from '../../types/chat';
+import ReactMarkdown, { Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { ComponentProps } from 'react';
+
+type CodeBlockProps = ComponentProps<'code'>;
+
+const customComponents: Components = {
+  code({ className, children, ...props }: CodeBlockProps) {
+    const match = /language-(\w+)/.exec(className || '');
+    return match ? (
+      <div className="my-4">
+        <div className="bg-black/40 rounded-t-xl px-4 py-2 border-b border-white/10">
+          <span className="text-white/60 text-sm font-mono">{match[1]}</span>
+        </div>
+        <pre className="bg-black/60 text-green-400 p-4 rounded-b-xl overflow-x-auto text-sm font-mono border border-white/10">
+          <code {...props}>{children}</code>
+        </pre>
+      </div>
+    ) : (
+      <code className="bg-black/50 text-primary-300 rounded-md px-1.5 py-1 text-sm font-mono" {...props}>
+        {children}
+      </code>
+    );
+  },
+};
 
 export const ChatMessage = ({ message }: { message: Message }) => {
   const isUser = message.role === 'user';
@@ -21,8 +46,10 @@ export const ChatMessage = ({ message }: { message: Message }) => {
               <p className="text-white/70 text-sm">Let&apos;s work on this together!</p>
             </div>
           </div>
-          <div className="text-white/90 whitespace-pre-wrap text-base leading-relaxed">
-            {typeof message.content === 'string' ? message.content : JSON.stringify(message.content)}
+          <div className="prose prose-invert max-w-none text-white/90 whitespace-pre-wrap text-base leading-relaxed">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {typeof message.content === 'string' ? message.content : JSON.stringify(message.content)}
+            </ReactMarkdown>
           </div>
         </div>
       </div>
@@ -30,35 +57,18 @@ export const ChatMessage = ({ message }: { message: Message }) => {
   }
 
   const renderContent = (content: unknown) => {
-    if (typeof content === 'string') {
-      // Check if content contains code blocks
-      const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-      if (codeBlockRegex.test(content)) {
-        return content.split(codeBlockRegex).map((part, index) => {
-          if (index % 3 === 0) {
-            // Regular text
-            return <span key={index} className="text-white/90 leading-relaxed">{part}</span>;
-          } else if (index % 3 === 1) {
-            // Language identifier
-            return null;
-          } else {
-            // Code content
-            return (
-              <div key={index} className="my-4">
-                <div className="bg-black/40 rounded-t-xl px-4 py-2 border-b border-white/10">
-                  <span className="text-white/60 text-sm font-mono">code</span>
-                </div>
-                <pre className="bg-black/60 text-green-400 p-4 rounded-b-xl overflow-x-auto text-sm font-mono border border-white/10">
-                  <code>{part}</code>
-                </pre>
-              </div>
-            );
-          }
-        });
-      }
-      return <span className="text-white/90 leading-relaxed">{content}</span>;
+    if (typeof content !== 'string') {
+      return <span className="text-white/90">{JSON.stringify(content)}</span>;
     }
-    return <span className="text-white/90">{JSON.stringify(content)}</span>;
+    
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={customComponents}
+      >
+        {content}
+      </ReactMarkdown>
+    );
   };
 
   return (
