@@ -1,26 +1,30 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { useChatStore } from '../../store/chatStore';
 import { ChatMessage } from './ChatMessage';
-import { nanoid } from 'nanoid';
 import { ProblemView } from '../problems/ProblemView';
 import { CodeEditor } from '../code/CodeEditor';
 
 export const ChatInterface = () => {
   const [input, setInput] = useState('');
+  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
   const messages = useChatStore((s) => s.messages);
-  const addMessage = useChatStore((s) => s.addMessage);
+  const sendMessage = useChatStore((s) => s.sendMessage);
+  const fetchMessages = useChatStore((s) => s.fetchMessages);
+  const isLoading = useChatStore((s) => s.isLoading);
   const currentProblem = useChatStore((s) => s.currentProblem);
   const isEditorVisible = useChatStore((s) => s.isEditorVisible);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchMessages(getAccessTokenSilently);
+    }
+  }, [isAuthenticated, fetchMessages, getAccessTokenSilently]);
+
   const handleSend = () => {
     if (!input.trim()) return;
-    addMessage({
-      id: nanoid(),
-      type: 'text',
-      content: input,
-      metadata: { timestamp: new Date().toISOString() },
-    });
+    sendMessage(input, getAccessTokenSilently);
     setInput('');
   };
 
@@ -29,10 +33,15 @@ export const ChatInterface = () => {
       {/* Chat Messages */}
       <div className="flex-1 overflow-auto p-4 bg-gray-100">
         <div className="space-y-4">
-          {messages.length === 0 ? (
+          {messages.length === 0 && !isLoading ? (
             <div className="text-gray-400 text-center">Chat history will appear here.</div>
           ) : (
             messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)
+          )}
+          {isLoading && (
+            <div className="flex justify-center items-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
           )}
         </div>
       </div>
@@ -53,8 +62,9 @@ export const ChatInterface = () => {
         <button
           className="rounded-lg bg-blue-500 px-4 py-2 text-white"
           onClick={handleSend}
+          disabled={isLoading}
         >
-          Send
+          {isLoading ? 'Sending...' : 'Send'}
         </button>
       </div>
     </div>
