@@ -48,8 +48,17 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
     router.push('/chat');
   };
 
+  // Show loading state if not authenticated yet
+  if (!isAuthenticated) {
+    return (
+      <div className="flex justify-center items-center min-h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   // Filter problems based on search term
-  const filteredProblems = problems.filter(problem =>
+  const filteredProblems = (problems || []).filter(problem =>
     problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     problem.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
     problem.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -75,12 +84,23 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
     );
   }
 
-  if (filteredProblems.length === 0) {
+  if (!problems || problems.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-96">
         <div className="text-center">
           <div className="text-gray-500 text-lg mb-2">No problems available</div>
           <div className="text-gray-400">Check back later for new problems</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (filteredProblems.length === 0) {
+    return (
+      <div className="flex justify-center items-center min-h-96">
+        <div className="text-center">
+          <div className="text-gray-500 text-lg mb-2">No problems found</div>
+          <div className="text-gray-400">Try adjusting your search terms</div>
         </div>
       </div>
     );

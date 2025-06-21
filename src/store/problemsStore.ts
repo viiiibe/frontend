@@ -23,10 +23,10 @@ export const useProblemsStore = create<ProblemsState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const data = await getProblems(getAccessTokenSilently);
-      set({ problems: data || [], isLoading: false });
+      set({ problems: Array.isArray(data) ? data : [], isLoading: false });
     } catch (error) {
       console.error("Failed to fetch problems", error);
-      set({ error: "Failed to load problems", isLoading: false });
+      set({ error: "Failed to load problems", isLoading: false, problems: [] });
     }
   },
   fetchProblemById: async (id, getAccessTokenSilently) => {
