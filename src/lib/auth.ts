@@ -1,9 +1,9 @@
 export const auth0Config = {
-  domain: "dev-w0vuxd3zxhj28flo.uk.auth0.com",
-  clientId: "OZKVYUdvGktgy5KAthZS8oBN97yC6zYW",
+  domain: "dev-ojvj8n4zvqe8rmrm.us.auth0.com",
+  clientId: "8q5IimCLt3gDPVfoiF8fPGKr1tcXh9H3",
   authorizationParams: {
     redirect_uri: "https://frontend-k6tf.onrender.com",
-    audience: "https://vibe-api"
+    audience: "https://backend-bdv7.onrender.com"
   },
   cacheLocation: "localstorage" as const,
   useRefreshTokens: true,
