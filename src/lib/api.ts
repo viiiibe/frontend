@@ -1,6 +1,17 @@
 import { GetTokenSilentlyOptions } from "@auth0/auth0-react";
 
-const API_BASE_URL = 'https://backend-bdv7.onrender.com/api';
+const getApiBaseUrl = () => {
+  // This code runs only in the browser.
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost') {
+      return 'http://localhost:1337/api';
+    }
+  }
+  // Default to production URL for server-side rendering or other environments
+  return 'https://backend-bdv7.onrender.com/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 async function fetchWithAuth(url: string, options: RequestInit, getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>) {
     const token = await getAccessTokenSilently();

@@ -67,6 +67,7 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
   const { problems, isLoading, error: storeError, fetchProblems } = useProblemsStore();
   const { initializeProblemChat } = useChatStore();
   const hasFetched = useRef(false);
+  const [loadingProblemId, setLoadingProblemId] = useState<string | null>(null);
   
   // Pagination state
   const [displayedProblems, setDisplayedProblems] = useState<Problem[]>([]);
@@ -190,11 +191,14 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
   }, [currentPage, hasMore, isLoadingMore, safeProblems, searchTerm]);
 
   const handleProblemClick = async (problem: Problem) => {
+    if (loadingProblemId) return; // Prevent multiple clicks
+    setLoadingProblemId(problem.id);
     try {
       await initializeProblemChat(problem, getAccessTokenSilently);
       router.push('/chat');
     } catch (error) {
       console.error('Error handling problem click:', error);
+      setLoadingProblemId(null); // Reset on error
     }
   };
 
@@ -295,6 +299,7 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
           const topics = safeArray(problem.topics, ['General']);
           const complexity = safeString(problem.complexity, 'Unknown');
           const isCustom = safeBoolean(problem.isCustom, false);
+          const isProblemLoading = loadingProblemId === id;
 
           if (!title || title === 'Untitled Problem') {
             console.log('Rendering: Problem without title at index', index, ':', problem);
@@ -305,8 +310,8 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
           return (
             <div
               key={id}
-              onClick={() => handleProblemClick(problem)}
-              className="glass-card rounded-2xl p-6 hover:scale-105 transition-all duration-300 cursor-pointer group border border-white/10 hover:border-primary-400/30"
+              onClick={() => !isProblemLoading && handleProblemClick(problem)}
+              className={`glass-card rounded-2xl p-6 transition-all duration-300 group border border-white/10 hover:border-primary-400/30 ${isProblemLoading ? 'cursor-wait' : 'cursor-pointer hover:scale-105'}`}
             >
               <div className="flex items-start justify-between mb-4">
                 <h3 className="text-xl font-bold text-neutral-100 group-hover:text-primary-300 transition-colors duration-300 line-clamp-2 flex-1 mr-4">
@@ -340,12 +345,19 @@ export const ProblemsList = ({ searchTerm = '' }: { searchTerm?: string }) => {
               </div>
               
               <div className="flex items-center justify-end">
-                <div className="flex items-center text-primary-300 text-sm font-semibold group-hover:text-primary-200 transition-colors duration-300">
-                  <span>Start Chat</span>
-                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </div>
+                {isProblemLoading ? (
+                  <div className="flex items-center space-x-3">
+                    <div className="spinner w-5 h-5"></div>
+                    <span className="text-sm text-white/80">Starting chat...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center text-primary-300 text-sm font-semibold group-hover:text-primary-200 transition-colors duration-300">
+                    <span>Start Chat</span>
+                    <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                )}
               </div>
             </div>
           );
