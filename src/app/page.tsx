@@ -1,6 +1,6 @@
 "use client";
 import { LoginButton } from '@/components/auth/LoginButton';
-import UserProfile from '@/components/auth/UserProfile';
+import { UserProfile } from '@/components/auth/UserProfile';
 import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0/client';
 
