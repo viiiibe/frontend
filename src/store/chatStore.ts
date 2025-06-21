@@ -8,17 +8,21 @@ interface ChatState {
   messages: Message[];
   currentProblem: Problem | null;
   isEditorVisible: boolean;
+  isCodeEditorMode: boolean;
   isLoading: boolean;
   fetchMessages: (getAccessTokenSilently: (options?: GetTokenSilentlyOptions) => Promise<string>) => Promise<void>;
   sendMessage: (content: string, getAccessTokenSilently: (options?: GetTokenSilentlyOptions) => Promise<string>) => Promise<void>;
   setCurrentProblem: (problem: Problem | null) => void;
   toggleEditor: () => void;
+  toggleCodeEditorMode: () => void;
+  setCodeEditorMode: (mode: boolean) => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   currentProblem: null,
   isEditorVisible: false,
+  isCodeEditorMode: false,
   isLoading: false,
   fetchMessages: async (getAccessTokenSilently) => {
     set({ isLoading: true });
@@ -87,4 +91,7 @@ export const useChatStore = create<ChatState>((set) => ({
   setCurrentProblem: (problem) => set({ currentProblem: problem }),
   toggleEditor: () =>
     set((state) => ({ isEditorVisible: !state.isEditorVisible })),
+  toggleCodeEditorMode: () =>
+    set((state) => ({ isCodeEditorMode: !state.isCodeEditorMode })),
+  setCodeEditorMode: (mode) => set({ isCodeEditorMode: mode }),
 })); 

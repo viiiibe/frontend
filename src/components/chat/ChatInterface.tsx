@@ -14,7 +14,8 @@ export const ChatInterface = () => {
   const fetchMessages = useChatStore((s) => s.fetchMessages);
   const isLoading = useChatStore((s) => s.isLoading);
   const currentProblem = useChatStore((s) => s.currentProblem);
-  const isEditorVisible = useChatStore((s) => s.isEditorVisible);
+  const isCodeEditorMode = useChatStore((s) => s.isCodeEditorMode);
+  const setCodeEditorMode = useChatStore((s) => s.setCodeEditorMode);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,14 +23,34 @@ export const ChatInterface = () => {
     }
   }, [isAuthenticated, fetchMessages, getAccessTokenSilently]);
 
+  // Trigger code editor mode for incoming assistant messages
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant' && !isCodeEditorMode) {
+        // For now, trigger code editor for all assistant messages
+        setCodeEditorMode(true);
+      }
+    }
+  }, [messages, isCodeEditorMode, setCodeEditorMode]);
+
   const handleSend = () => {
     if (!input.trim()) return;
     sendMessage(input, getAccessTokenSilently);
     setInput('');
   };
 
-  return (
-    <div className="flex flex-col h-screen">
+  const handleCodeSend = (code: string, language: string) => {
+    const codeMessage = `\`\`\`${language}\n${code}\n\`\`\``;
+    sendMessage(codeMessage, getAccessTokenSilently);
+  };
+
+  const handleCloseCodeEditor = () => {
+    setCodeEditorMode(false);
+  };
+
+  const chatContent = (
+    <div className="flex flex-col h-full">
       {/* Chat Messages */}
       <div className="flex-1 overflow-auto p-4 bg-gray-100">
         <div className="space-y-4">
@@ -45,28 +66,59 @@ export const ChatInterface = () => {
           )}
         </div>
       </div>
-      {/* Problem View / Code Editor */}
-      <div className="w-full border-t bg-white p-4 flex flex-col gap-4">
-        {currentProblem && <ProblemView problem={currentProblem} />}
-        {isEditorVisible && <CodeEditor />}
+      
+      {/* Problem View */}
+      {currentProblem && (
+        <div className="border-t bg-white p-4">
+          <ProblemView problem={currentProblem} />
+        </div>
+      )}
+      
+      {/* Input Area - Only show when not in code editor mode */}
+      {!isCodeEditorMode && (
+        <div className="border-t p-4 bg-gray-50 flex items-center gap-2">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="w-full rounded-lg border p-2"
+            placeholder="Type your message..."
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+          />
+          <button
+            className="rounded-lg bg-blue-500 px-4 py-2 text-white"
+            onClick={handleSend}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Sending...' : 'Send'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  if (isCodeEditorMode) {
+    return (
+      <div className="flex h-screen">
+        {/* Chat Section - 50% width */}
+        <div className="w-1/2 border-r border-gray-300">
+          {chatContent}
+        </div>
+        
+        {/* Code Editor Section - 50% width */}
+        <div className="w-1/2">
+          <CodeEditor 
+            onSend={handleCodeSend}
+            onClose={handleCloseCodeEditor}
+            isComposer={true}
+          />
+        </div>
       </div>
-      {/* Input Area */}
-      <div className="border-t p-4 bg-gray-50 flex items-center gap-2">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="w-full rounded-lg border p-2"
-          placeholder="Type your message..."
-          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-        />
-        <button
-          className="rounded-lg bg-blue-500 px-4 py-2 text-white"
-          onClick={handleSend}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Sending...' : 'Send'}
-        </button>
-      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-screen">
+      {chatContent}
     </div>
   );
 }; 
