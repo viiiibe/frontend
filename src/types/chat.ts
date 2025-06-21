@@ -14,10 +14,13 @@ export interface Problem {
   id: string;
   title: string;
   description: string;
-  topic: string;
+  topics: string[];
   complexity: string;
   isCustom: boolean;
-  // ...other fields as needed
+  createdByUserId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  testCases?: unknown[];
 }
 
 export interface ApiMessagePair {

@@ -38,8 +38,11 @@ export const sendMessage = (message: string, getAccessTokenSilently: (options?: 
 };
 
 export const getProblems = (getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>) => {
+    console.log('getProblems API called');
     return fetchWithAuth('/problems', { method: 'GET' }, getAccessTokenSilently).then(data => {
-        console.log('Problems API response:', data);
+        console.log('Problems API response received:', data);
+        console.log('Problems API response type:', typeof data);
+        console.log('Problems API response is array:', Array.isArray(data));
         return data;
     }).catch(error => {
         console.error('Problems API error:', error);

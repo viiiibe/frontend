@@ -6,7 +6,7 @@ export const ProblemView = ({ problem }: { problem: Problem }) => {
       <h2 className="text-2xl font-bold mb-2">{problem.title}</h2>
       <div className="mb-2 text-gray-700">{problem.description}</div>
       <div className="flex gap-4 text-sm text-gray-500 mt-2">
-        <span>Topic: {problem.topic}</span>
+        <span>Topics: {problem.topics.join(', ')}</span>
         <span>Complexity: {problem.complexity}</span>
         {problem.isCustom && <span className="text-blue-500">Custom</span>}
       </div>

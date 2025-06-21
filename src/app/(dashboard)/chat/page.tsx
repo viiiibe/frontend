@@ -5,17 +5,29 @@ import { useRouter } from 'next/navigation';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 
 export default function ChatPage() {
-  const { isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated, isLoading: authLoading } = useAuth0();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, authLoading, router]);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (!isAuthenticated) return null;
+  if (authLoading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner w-12 h-12 mx-auto mb-4"></div>
+          <p className="text-white/70">Loading chat...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return <ChatInterface />;
 } 

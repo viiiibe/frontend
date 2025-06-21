@@ -110,7 +110,7 @@ export const useChatStore = create<ChatState>((set) => ({
     console.log('Chat cleared and problem set');
     
     // Create the problem description message
-    const problemMessage = `Problem: ${problem.title}\n\nDescription: ${problem.description}\n\nTopic: ${problem.topic}\nComplexity: ${problem.complexity}${problem.isCustom ? '\nType: Custom Problem' : ''}\n\nLet's discuss this problem and work on a solution together!`;
+    const problemMessage = `Problem: ${problem.title}\n\nDescription: ${problem.description}\n\nTopics: ${problem.topics.join(', ')}\nComplexity: ${problem.complexity}${problem.isCustom ? '\nType: Custom Problem' : ''}\n\nLet's discuss this problem and work on a solution together!`;
     console.log('Problem message created:', problemMessage.substring(0, 100) + '...');
     
     // Add the problem description as a problem message (not a user message)

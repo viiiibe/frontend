@@ -36,26 +36,34 @@ export const CodeEditor = ({ onRun, onSend, onClose, isComposer = false }: CodeE
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-900 border-l border-gray-700">
+    <div className="h-full flex flex-col glass-card rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center p-4 border-b border-gray-700 bg-gray-800">
+      <div className="flex justify-between items-center p-6 border-b border-white/10 bg-black/20">
         <div className="flex items-center space-x-4">
-          <h3 className="text-white font-semibold text-lg">Code Editor</h3>
+          <div className="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-lg">Code Editor</h3>
+            <p className="text-white/50 text-sm">Write and test your solutions</p>
+          </div>
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="glass-card rounded-xl border border-white/20 text-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400/50 transition-all duration-300"
           >
             {LANGUAGES.map((lang) => (
               <option key={lang.value} value={lang.value}>{lang.label}</option>
             ))}
           </select>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-3">
           {!isComposer && onRun && (
             <button
               onClick={handleRun}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2"
+              className="btn-primary px-4 py-2 text-sm flex items-center space-x-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -67,7 +75,7 @@ export const CodeEditor = ({ onRun, onSend, onClose, isComposer = false }: CodeE
             <button
               onClick={handleSend}
               disabled={!code.trim()}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2"
+              className="btn-primary px-6 py-2 text-sm flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -78,7 +86,7 @@ export const CodeEditor = ({ onRun, onSend, onClose, isComposer = false }: CodeE
           {isComposer && onClose && (
             <button
               onClick={onClose}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+              className="btn-secondary px-4 py-2 text-sm"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -89,7 +97,7 @@ export const CodeEditor = ({ onRun, onSend, onClose, isComposer = false }: CodeE
       </div>
       
       {/* Editor */}
-      <div className="flex-1">
+      <div className="flex-1 bg-black/40">
         <MonacoEditor
           height="100%"
           defaultLanguage={language}
