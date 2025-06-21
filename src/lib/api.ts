@@ -35,4 +35,12 @@ export const sendMessage = (message: string, getAccessTokenSilently: (options?: 
         method: 'POST',
         body: JSON.stringify({ message }),
     }, getAccessTokenSilently);
+};
+
+export const getProblems = (getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>) => {
+    return fetchWithAuth('/problems', { method: 'GET' }, getAccessTokenSilently);
+};
+
+export const getProblemById = (id: string, getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>) => {
+    return fetchWithAuth(`/problems/${id}`, { method: 'GET' }, getAccessTokenSilently);
 }; 

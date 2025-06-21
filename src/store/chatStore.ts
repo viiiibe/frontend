@@ -16,6 +16,7 @@ interface ChatState {
   toggleEditor: () => void;
   toggleCodeEditorMode: () => void;
   setCodeEditorMode: (mode: boolean) => void;
+  initializeProblemChat: (problem: Problem) => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -94,4 +95,21 @@ export const useChatStore = create<ChatState>((set) => ({
   toggleCodeEditorMode: () =>
     set((state) => ({ isCodeEditorMode: !state.isCodeEditorMode })),
   setCodeEditorMode: (mode) => set({ isCodeEditorMode: mode }),
+  initializeProblemChat: (problem: Problem) => {
+    set({ currentProblem: problem });
+    
+    // Create the problem description message
+    const problemMessage = `Problem: ${problem.title}\n\nDescription: ${problem.description}\n\nTopic: ${problem.topic}\nComplexity: ${problem.complexity}${problem.isCustom ? '\nType: Custom Problem' : ''}\n\nLet's discuss this problem and work on a solution together!`;
+    
+    // Add the problem description as the first message
+    const userMessage: Message = {
+      id: nanoid(),
+      role: 'user',
+      type: 'text',
+      content: problemMessage,
+      metadata: { timestamp: new Date().toISOString() },
+    };
+    
+    set({ messages: [userMessage] });
+  },
 })); 
