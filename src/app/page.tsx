@@ -2,13 +2,13 @@
 import { LoginButton } from '@/components/auth/LoginButton';
 import { UserProfile } from '@/components/auth/UserProfile';
 import Link from 'next/link';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useAuth0 } from '@auth0/auth0-react';
 
 export default function Home() {
-  const { user, isLoading, error } = useUser();
+  const { isAuthenticated, isLoading, error, user } = useAuth0();
   
   // Debug information
-  console.log('Main Page Auth State:', { user, isLoading, error });
+  console.log('Main Page Auth State:', { isAuthenticated, isLoading, error, user });
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -19,14 +19,14 @@ export default function Home() {
       
       {/* Debug info */}
       <div className="mb-4 p-4 bg-yellow-100 rounded-lg text-sm">
-        <p>Auth State: {isLoading ? 'Loading...' : user ? 'Authenticated' : 'Not Authenticated'}</p>
+        <p>Auth State: {isLoading ? 'Loading...' : isAuthenticated ? 'Authenticated' : 'Not Authenticated'}</p>
         {error && <p>Error: {error.message}</p>}
         {user && <p>User: {user.name} ({user.email})</p>}
       </div>
       
       <UserProfile />
-      {!user && !isLoading && <LoginButton />}
-      {user && (
+      {!isAuthenticated && <LoginButton />}
+      {isAuthenticated && (
         <Link href="/chat" className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold">
           Go to Dashboard
         </Link>

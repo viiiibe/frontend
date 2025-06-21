@@ -1,21 +1,21 @@
 "use client";
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 
 export default function ChatPage() {
-  const { user, isLoading } = useUser();
+  const { isAuthenticated, isLoading } = useAuth0();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/');
     }
-  }, [user, isLoading, router]);
+  }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) return <div>Loading...</div>;
-  if (!user) return null;
+  if (!isAuthenticated) return null;
 
   return <ChatInterface />;
 } 
