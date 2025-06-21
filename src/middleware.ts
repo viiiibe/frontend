@@ -4,6 +4,9 @@ export default withMiddlewareAuthRequired();
 
 export const config = {
   matcher: [
+    '/chat',
+    '/problems',
+    '/profile',
     '/chat/:path*',
     '/problems/:path*',
     '/profile/:path*',
