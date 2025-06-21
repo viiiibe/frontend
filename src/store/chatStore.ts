@@ -29,7 +29,8 @@ export const useChatStore = create<ChatState>((set) => ({
     set({ isLoading: true });
     try {
       const data = await getMessages(getAccessTokenSilently);
-      const formattedMessages: Message[] = (data.messages || []).flatMap((pair: ApiMessagePair) => [
+      const messages = data?.messages || [];
+      const formattedMessages: Message[] = messages.flatMap((pair: ApiMessagePair) => [
         {
           id: nanoid(),
           role: 'user' as const,
@@ -48,7 +49,7 @@ export const useChatStore = create<ChatState>((set) => ({
       set({ messages: formattedMessages, isLoading: false });
     } catch (error) {
       console.error("Failed to fetch messages", error);
-      set({ isLoading: false });
+      set({ messages: [], isLoading: false });
     }
   },
   sendMessage: async (content, getAccessTokenSilently) => {

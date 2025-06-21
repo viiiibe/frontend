@@ -25,7 +25,7 @@ export const ChatInterface = () => {
 
   // Trigger code editor mode for incoming assistant messages
   useEffect(() => {
-    if (messages.length > 0) {
+    if (messages && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'assistant' && !isCodeEditorMode) {
         // For now, trigger code editor for all assistant messages
@@ -54,7 +54,7 @@ export const ChatInterface = () => {
       {/* Chat Messages */}
       <div className="flex-1 overflow-auto p-4 bg-gray-100">
         <div className="space-y-4">
-          {messages.length === 0 && !isLoading ? (
+          {(!messages || messages.length === 0) && !isLoading ? (
             <div className="text-gray-400 text-center">Chat history will appear here.</div>
           ) : (
             messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)
