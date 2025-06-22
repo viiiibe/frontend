@@ -1,0 +1,84 @@
+{
+  "problems": [
+    {
+      "acRate": 55.77939635288257,
+      "content": "<p>Given an array of integers <code>nums</code>&nbsp;and an integer <code>target</code>, return <em>indices of the two numbers such that they add up to <code>target</code></em>.</p>\n\n<p>You may assume that each input would have <strong><em>exactly</em> one solution</strong>, and you may not use the <em>same</em> element twice.</p>\n\n<p>You can return the answer in any order.</p>",
+      "difficulty": "Easy",
+      "freqBar": null,
+      "frontendQuestionId": "1",
+      "hasSolution": true,
+      "hasVideoSolution": true,
+      "isFavor": false,
+      "paidOnly": false,
+      "status": "ac",
+      "title": "Two Sum",
+      "titleSlug": "two-sum",
+      "topicTags": [
+        {
+          "id": "VG9waWNUYWdOb2RlOjU=",
+          "name": "Array",
+          "slug": "array"
+        },
+        {
+          "id": "VG9waWNUYWdOb2RlOjY=",
+          "name": "Hash Table",
+          "slug": "hash-table"
+        }
+      ],
+      "latestSubmission": {
+        "flagType": "WHITE",
+        "frontendId": 3,
+        "hasNotes": false,
+        "id": "1541027802",
+        "isPending": "Not Pending",
+        "lang": {
+          "name": "python3",
+          "verboseName": "Python3"
+        },
+        "langName": "Python3",
+        "memory": 18712000,
+        "notes": "",
+        "runtime": 0,
+        "status": 10,
+        "statusDisplay": "Accepted",
+        "timestamp": 1739400008,
+        "title": "Two Sum",
+        "titleSlug": "two-sum",
+        "topicTags": [],
+        "url": "/submissions/detail/1541027802/",
+        "runtimeDisplay": "0 ms",
+        "runtimePercentile": 100,
+        "runtimeDistribution": "{\"lang\": \"python3\", \"distribution\": [[\"22\", 65.11189999999996], [\"66\", 0.048699999999999986]]}",
+        "memoryDisplay": "18.7 MB",
+        "memoryPercentile": 62.522400000000005,
+        "memoryDistribution": "{\"lang\": \"python3\", \"distribution\": [[\"17500\", 0.0034], [\"17600\", 0.0007]]}",
+        "code": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> tuple[int, int]:\n        num_to_pos = {}\n        for i, num in enumerate(nums):\n            second = target - num\n            if second in num_to_pos:\n                return i, num_to_pos[second]\n\n            num_to_pos[num] = i\n\n        raise ValueError(\"Not found\")",
+        "statusCode": 10,
+        "user": {
+          "username": "example_user",
+          "profile": {
+            "realName": "Example User",
+            "userAvatar": "https://assets.leetcode.com/users/example/avatar.png"
+          }
+        },
+        "question": {
+          "questionId": "1",
+          "titleSlug": "two-sum",
+          "hasFrontendPreview": false
+        },
+        "runtimeError": null,
+        "compileError": null,
+        "lastTestcase": "",
+        "codeOutput": "",
+        "expectedOutput": "",
+        "totalCorrect": 63,
+        "totalTestcases": 63,
+        "fullCodeOutput": null,
+        "testDescriptions": null,
+        "testBodies": null,
+        "testInfo": null,
+        "stdOutput": ""
+      }
+    }
+  ]
+} 

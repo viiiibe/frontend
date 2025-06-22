@@ -55,6 +55,13 @@ function NavBar() {
               <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary-500/20 to-secondary-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
             <Link 
+              href="/import" 
+              className="relative group px-4 py-2 rounded-lg transition-all duration-300 hover:bg-white/10"
+            >
+              <span className="text-white/90 group-hover:text-white transition-colors">Import</span>
+              <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary-500/20 to-secondary-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </Link>
+            <Link 
               href="/profile" 
               className="relative group px-4 py-2 rounded-lg transition-all duration-300 hover:bg-white/10"
             >

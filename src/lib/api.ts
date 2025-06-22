@@ -70,4 +70,16 @@ export const clearMessages = (getAccessTokenSilently: (options?: GetTokenSilentl
         method: 'DELETE',
         body: JSON.stringify({ unreadOnly: false }),
     }, getAccessTokenSilently);
+};
+
+export const createSubmission = (
+    problemId: string, 
+    code: string, 
+    language: string, 
+    getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>
+) => {
+    return fetchWithAuth('/submissions', {
+        method: 'POST',
+        body: JSON.stringify({ problemId, code, language }),
+    }, getAccessTokenSilently);
 }; 
