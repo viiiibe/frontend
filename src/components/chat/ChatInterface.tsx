@@ -7,10 +7,12 @@ import { CodeEditor } from '../code/CodeEditor';
 
 export const ChatInterface = () => {
   const [input, setInput] = useState('');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
   const messages = useChatStore((s) => s.messages);
   const sendMessage = useChatStore((s) => s.sendMessage);
   const fetchMessages = useChatStore((s) => s.fetchMessages);
+  const clearMessages = useChatStore((s) => s.clearMessages);
   const isLoading = useChatStore((s) => s.isLoading);
   const currentProblem = useChatStore((s) => s.currentProblem);
   const isCodeEditorMode = useChatStore((s) => s.isCodeEditorMode);
@@ -29,6 +31,24 @@ export const ChatInterface = () => {
   useEffect(() => {
     hasFetchedMessages.current = false;
   }, [currentProblem]);
+
+  // Handle clicking outside confirmation dialog
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showClearConfirm && !target.closest('.clear-chat-dialog')) {
+        setShowClearConfirm(false);
+      }
+    };
+
+    if (showClearConfirm) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showClearConfirm]);
 
   // Only trigger code editor mode for new assistant messages
   useEffect(() => {
@@ -64,22 +84,81 @@ export const ChatInterface = () => {
     setCodeEditorMode(false);
   };
 
+  const handleClearChat = async () => {
+    try {
+      await clearMessages(getAccessTokenSilently);
+      setShowClearConfirm(false);
+    } catch (error) {
+      console.error('Failed to clear chat:', error);
+    }
+  };
+
   const chatContent = (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="glass-card rounded-t-2xl p-6 border-b border-white/10">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">AI Coding Assistant</h2>
+              <p className="text-white/70 text-sm">
+                {currentProblem ? `Working on: ${currentProblem.title}` : 'Ready to help you code!'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">AI Coding Assistant</h2>
-            <p className="text-white/70 text-sm">
-              {currentProblem ? `Working on: ${currentProblem.title}` : 'Ready to help you code!'}
-            </p>
-          </div>
+          
+          {/* Clear Chat Button */}
+          {messages && messages.length > 0 && (
+            <div className="clear-chat-dialog relative">
+              <button
+                onClick={() => setShowClearConfirm(true)}
+                className="flex items-center space-x-2 px-4 py-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/20 hover:border-white/30"
+                disabled={isLoading}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span className="text-sm font-medium">Clear Chat</span>
+              </button>
+              
+              {/* Confirmation Dialog */}
+              {showClearConfirm && (
+                <div className="clear-chat-dialog absolute right-0 top-12 z-50 glass-card rounded-2xl p-6 border border-white/20 shadow-2xl min-w-80">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center">
+                      <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">Clear Chat History</h3>
+                      <p className="text-white/70 text-sm">This action cannot be undone.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => setShowClearConfirm(false)}
+                      className="flex-1 px-4 py-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/20 hover:border-white/30"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleClearChat}
+                      className="flex-1 px-4 py-2 text-white bg-red-500 hover:bg-red-600 rounded-xl transition-all duration-200 font-medium"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

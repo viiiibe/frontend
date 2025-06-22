@@ -78,7 +78,10 @@ export const useChatStore = create<ChatState>((set) => ({
         role: 'assistant',
         type: 'text',
         content: response.response,
-        metadata: { timestamp: new Date().toISOString() },
+        metadata: { 
+          timestamp: new Date().toISOString(),
+          thinkingProcess: response.thinkingProcess || undefined,
+        },
       };
       set((state) => ({
         messages: [...(state.messages || []), assistantMessage],
@@ -139,7 +142,10 @@ export const useChatStore = create<ChatState>((set) => ({
           role: 'assistant',
           type: 'text',
           content: response.response,
-          metadata: { timestamp: new Date().toISOString() },
+          metadata: { 
+            timestamp: new Date().toISOString(),
+            thinkingProcess: response.thinkingProcess || undefined,
+          },
         };
         set((state) => ({
           messages: [...state.messages, assistantMessage],

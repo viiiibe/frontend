@@ -7,6 +7,7 @@ export interface Message {
     problemId?: string;
     submissionId?: string;
     timestamp: string;
+    thinkingProcess?: ThinkingProcessData;
   };
 }
 
@@ -117,4 +118,39 @@ export interface SubmissionRequest {
   problemId: string;
   code: string;
   language: string;
+}
+
+export interface ThinkingProcessData {
+  totalTurns: number;
+  turns: ThinkingTurn[];
+  totalToolCalls: number;
+  processingTimeMs: number;
+}
+
+export interface ThinkingTurn {
+  turnNumber: number;
+  assistantMessage: string;
+  toolCalls: ToolCall[];
+  toolResults: ToolResult[];
+  timestamp: string;
+}
+
+export interface ToolCall {
+  id: string;
+  type: string;
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+export interface ToolResult {
+  functionName: string;
+  success: boolean;
+  result: {
+    compileError?: string;
+    results?: unknown[];
+    allPassed?: boolean;
+    [key: string]: unknown;
+  };
 } 

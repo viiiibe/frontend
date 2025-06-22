@@ -2,6 +2,7 @@ import type { Message } from '../../types/chat';
 import ReactMarkdown, { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ComponentProps } from 'react';
+import { ThinkingProcess } from './ThinkingProcess';
 
 type CodeBlockProps = ComponentProps<'code'>;
 
@@ -107,6 +108,11 @@ export const ChatMessage = ({ message }: { message: Message }) => {
             <div className="prose prose-invert max-w-none">
               {renderContent(message.content)}
             </div>
+            
+            {/* Thinking Process */}
+            {!isUser && message.metadata?.thinkingProcess && (
+              <ThinkingProcess thinkingProcess={message.metadata.thinkingProcess} />
+            )}
           </div>
         </div>
       </div>

@@ -21,7 +21,7 @@ interface CodeEditorProps {
 }
 
 export const CodeEditor = ({ onRun, onSend, onClose, isComposer = false }: CodeEditorProps) => {
-  const [language, setLanguage] = useState('javascript');
+  const [language, setLanguage] = useState('python');
   const [code, setCode] = useState('');
 
   const handleRun = () => {
