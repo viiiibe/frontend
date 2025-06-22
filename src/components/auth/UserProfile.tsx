@@ -11,7 +11,7 @@ export const UserProfile = () => {
       if (isAuthenticated) {
         try {
           const token = await getAccessTokenSilently();
-          const response = await fetch('https://backend-bdv7.onrender.com/api/users/me', {
+          const response = await fetch('http://localhost:1337/api/users/me', {
             headers: {
               Authorization: `Bearer ${token}`,
             },
