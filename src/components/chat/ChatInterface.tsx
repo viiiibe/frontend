@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useChatStore } from '../../store/chatStore';
 import { ChatMessage } from './ChatMessage';
@@ -15,13 +15,20 @@ export const ChatInterface = () => {
   const currentProblem = useChatStore((s) => s.currentProblem);
   const isCodeEditorMode = useChatStore((s) => s.isCodeEditorMode);
   const setCodeEditorMode = useChatStore((s) => s.setCodeEditorMode);
+  const hasFetchedMessages = useRef(false);
 
   // Only fetch messages once when component mounts and user is authenticated
   useEffect(() => {
-    if (isAuthenticated && !currentProblem && (!messages || messages.length === 0)) {
+    if (isAuthenticated && !currentProblem && !hasFetchedMessages.current) {
+      hasFetchedMessages.current = true;
       fetchMessages(getAccessTokenSilently).catch(console.error);
     }
-  }, [isAuthenticated]); // Remove dependencies that cause infinite loops
+  }, [isAuthenticated, currentProblem, fetchMessages, getAccessTokenSilently]);
+
+  // Reset hasFetchedMessages when currentProblem changes
+  useEffect(() => {
+    hasFetchedMessages.current = false;
+  }, [currentProblem]);
 
   // Only trigger code editor mode for new assistant messages
   useEffect(() => {
@@ -31,7 +38,7 @@ export const ChatInterface = () => {
         setCodeEditorMode(true);
       }
     }
-  }, [messages?.length]); // Only depend on messages length, not the full messages array
+  }, [messages, isCodeEditorMode, setCodeEditorMode]); // Only depend on messages length, not the full messages array
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;

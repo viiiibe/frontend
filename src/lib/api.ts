@@ -82,4 +82,8 @@ export const createSubmission = (
         method: 'POST',
         body: JSON.stringify({ problemId, code, language }),
     }, getAccessTokenSilently);
+};
+
+export const getMySubmissions = (getAccessTokenSilently: (options?: GetTokenSilentlyOptions | undefined) => Promise<string>) => {
+    return fetchWithAuth('/submissions/my', { method: 'GET' }, getAccessTokenSilently);
 }; 

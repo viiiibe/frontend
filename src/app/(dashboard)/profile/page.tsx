@@ -1,7 +1,98 @@
 "use client";
+import { useState, useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { UserProfile } from '@/components/auth/UserProfile';
+import { SubmissionsList } from '@/components/profile/SubmissionsList';
+import { getMySubmissions, getProblemById } from '@/lib/api';
+
+interface Submission {
+  id: string;
+  problemId: string;
+  problemTitle?: string;
+  code: string;
+  language: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Problem {
+  id: string;
+  title: string;
+  description: string;
+  complexity: string;
+  topics: string[];
+  isCustom: boolean;
+}
 
 export default function ProfilePage() {
+  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [problemTitles, setProblemTitles] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchProblemTitles = async (submissionsData: Submission[]) => {
+      if (!isAuthenticated) return;
+
+      // Get unique problem IDs
+      const uniqueProblemIds = [...new Set(submissionsData.map(s => s.problemId))];
+      const titles: Record<string, string> = {};
+
+      // Fetch problem details for each unique problem ID
+      for (const problemId of uniqueProblemIds) {
+        try {
+          const problem: Problem = await getProblemById(problemId, getAccessTokenSilently);
+          titles[problemId] = problem.title;
+        } catch (err) {
+          console.error(`Error fetching problem ${problemId}:`, err);
+          titles[problemId] = `Problem ${problemId}`; // Fallback title
+        }
+      }
+
+      setProblemTitles(titles);
+    };
+
+    const fetchSubmissions = async () => {
+      if (!isAuthenticated) return;
+      
+      setIsLoading(true);
+      
+      try {
+        const data = await getMySubmissions(getAccessTokenSilently);
+        const submissionsData = Array.isArray(data) ? data : [];
+        setSubmissions(submissionsData);
+        
+        // Fetch problem titles for unique problem IDs
+        await fetchProblemTitles(submissionsData);
+      } catch (err) {
+        console.error('Error fetching submissions:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSubmissions();
+  }, [isAuthenticated, getAccessTokenSilently]);
+
+  // Enhance submissions with problem titles
+  const enhancedSubmissions = submissions.map(submission => ({
+    ...submission,
+    problemTitle: problemTitles[submission.problemId] || `Problem ${submission.problemId}`
+  }));
+
+  // Calculate stats from submissions
+  const successfulSubmissions = enhancedSubmissions.filter(s => 
+    s.status.toLowerCase() === 'accepted' || s.status.toLowerCase() === 'success'
+  );
+  const totalSubmissions = enhancedSubmissions.length;
+  const successRate = totalSubmissions > 0 ? Math.round((successfulSubmissions.length / totalSubmissions) * 100) : 0;
+  
+  // Calculate days active (unique days with submissions)
+  const uniqueDays = new Set(
+    enhancedSubmissions.map(s => new Date(s.createdAt).toDateString())
+  ).size;
+
   return (
     <main className="min-h-screen p-8">
       <div className="max-w-4xl mx-auto">
@@ -31,7 +122,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Progress & Stats Section */}
-        <div className="animate-fade-in">
+        <div className="mb-12 animate-fade-in">
           <div className="glass-card rounded-2xl p-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Progress & Stats</h2>
@@ -39,15 +130,15 @@ export default function ProfilePage() {
             </div>
             
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
                 <div className="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center mx-auto mb-4">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div className="text-3xl font-bold gradient-text mb-2">0</div>
-                <div className="text-white/70">Problems Solved</div>
+                <div className="text-3xl font-bold gradient-text mb-2">{totalSubmissions}</div>
+                <div className="text-white/70">Total Submissions</div>
               </div>
               
               <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
@@ -56,7 +147,7 @@ export default function ProfilePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div className="text-3xl font-bold gradient-text mb-2">0</div>
+                <div className="text-3xl font-bold gradient-text mb-2">{uniqueDays}</div>
                 <div className="text-white/70">Days Active</div>
               </div>
               
@@ -66,61 +157,17 @@ export default function ProfilePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <div className="text-3xl font-bold gradient-text mb-2">0%</div>
+                <div className="text-3xl font-bold gradient-text mb-2">{successRate}%</div>
                 <div className="text-white/70">Success Rate</div>
               </div>
             </div>
-            
-            {/* Learning Path */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-white mb-4">Your Learning Path</h3>
-              <div className="space-y-3">
-                <div className="flex items-center p-4 bg-white/5 rounded-xl border border-white/10">
-                  <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-white/50 text-sm">1</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-white font-medium">Complete your first problem</div>
-                    <div className="text-white/50 text-sm">Start with an easy problem to get familiar</div>
-                  </div>
-                  <div className="text-white/30">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-                
-                <div className="flex items-center p-4 bg-white/5 rounded-xl border border-white/10">
-                  <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-white/50 text-sm">2</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-white font-medium">Solve 10 problems</div>
-                    <div className="text-white/50 text-sm">Build your confidence with consistent practice</div>
-                  </div>
-                  <div className="text-white/30">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-                
-                <div className="flex items-center p-4 bg-white/5 rounded-xl border border-white/10">
-                  <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-white/50 text-sm">3</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-white font-medium">Master advanced topics</div>
-                    <div className="text-white/50 text-sm">Tackle complex algorithms and data structures</div>
-                  </div>
-                  <div className="text-white/30">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
+          </div>
+        </div>
+
+        {/* Submissions Section */}
+        <div className="animate-fade-in">
+          <div className="glass-card rounded-2xl p-8">
+            <SubmissionsList submissions={enhancedSubmissions} isLoading={isLoading} />
           </div>
         </div>
       </div>

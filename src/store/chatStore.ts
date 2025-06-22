@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import type { Message, Problem, ApiMessagePair } from '../types/chat';
-import { getMessages, sendMessage as sendMessageApi, clearMessages } from '../lib/api';
+import { getMessages, sendMessage as sendMessageApi, clearMessages as clearMessagesApi } from '../lib/api';
 import { GetTokenSilentlyOptions } from '@auth0/auth0-react';
 
 interface ChatState {
@@ -11,6 +11,7 @@ interface ChatState {
   isCodeEditorMode: boolean;
   isLoading: boolean;
   fetchMessages: (getAccessTokenSilently: (options?: GetTokenSilentlyOptions) => Promise<string>) => Promise<void>;
+  clearMessages: (getAccessTokenSilently: (options?: GetTokenSilentlyOptions) => Promise<string>) => Promise<void>;
   sendMessage: (content: string, getAccessTokenSilently: (options?: GetTokenSilentlyOptions) => Promise<string>) => Promise<void>;
   setCurrentProblem: (problem: Problem | null) => void;
   toggleEditor: () => void;
@@ -26,14 +27,8 @@ export const useChatStore = create<ChatState>((set) => ({
   isCodeEditorMode: false,
   isLoading: false,
   fetchMessages: async (getAccessTokenSilently) => {
-    set({ isLoading: true, messages: [] });
+    set({ isLoading: true });
     try {
-      // Only clear messages on the backend if there's no current problem
-      // This prevents clearing problem messages that were just sent
-      const state = useChatStore.getState();
-      if (!state.currentProblem) {
-        await clearMessages(getAccessTokenSilently);
-      }
       const data = await getMessages(getAccessTokenSilently);
       const messagesArray = data?.messages || [];
       const formattedMessages: Message[] = messagesArray.flatMap((pair: ApiMessagePair) => [
@@ -56,6 +51,14 @@ export const useChatStore = create<ChatState>((set) => ({
     } catch (error) {
       console.error("Failed to fetch messages", error);
       set({ isLoading: false, messages: [] });
+    }
+  },
+  clearMessages: async (getAccessTokenSilently) => {
+    try {
+      await clearMessagesApi(getAccessTokenSilently);
+      set({ messages: [] });
+    } catch (error) {
+      console.error("Failed to clear messages", error);
     }
   },
   sendMessage: async (content, getAccessTokenSilently) => {
